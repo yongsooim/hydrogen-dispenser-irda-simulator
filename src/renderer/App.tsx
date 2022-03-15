@@ -1,14 +1,30 @@
-import { MemoryRouter as Router, Routes, Route } from 'react-router-dom';
-import icon from '../../assets/icon.svg';
+import { MemoryRouter as Router, Routes, Route, } from 'react-router-dom';
 import './App.css';
+import {IpcRenderer} from 'electron' // for typing
+import PortsList, {setPorts} from './PortsList'
+
+declare global {  // workaround to access window.electron
+  interface Window {
+      electron:any;
+  }
+}
+
+
+let ipcRenderer:IpcRenderer = window.electron.ipcRenderer;
+
+let portsString = "f"
+
+setInterval(_=>{setPorts('asf')}, 1000)
+
+ipcRenderer.on('portsReq', (receivedPorts) => {
+  //console.log(receivedPorts)
+  portsString = JSON.stringify(receivedPorts)
+})
 
 const Hello = () => {
   return (
     <div>
-      <div className="Hello">
-        <img width="200px" alt="icon" src={icon} />
-      </div>
-      <h1>electron-react-boilerplate</h1>
+      <h1>Hydrogen Dispenser IrDA Simulator</h1>
       <div className="Hello">
         <a
           href="https://electron-react-boilerplate.js.org/"
@@ -16,10 +32,7 @@ const Hello = () => {
           rel="noreferrer"
         >
           <button type="button">
-            <span role="img" aria-label="books">
-              📚
-            </span>
-            Read our docs
+            button1
           </button>
         </a>
         <a
@@ -28,11 +41,10 @@ const Hello = () => {
           rel="noreferrer"
         >
           <button type="button">
-            <span role="img" aria-label="books">
-              🙏
-            </span>
-            Donate
+            button2
           </button>
+          <PortsList name = {portsString} />
+
         </a>
       </div>
     </div>

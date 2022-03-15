@@ -14,6 +14,8 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import {SerialPort} from 'serialport'
+
 
 export default class AppUpdater {
   constructor() {
@@ -25,10 +27,15 @@ export default class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
+
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
+});
+
+ipcMain.on('portsReq', async (event) => {
+  SerialPort.list().then(ports=>{event.reply('portsReq', ports)})
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -41,7 +48,15 @@ const isDevelopment =
 
 if (isDevelopment) {
   require('electron-debug')();
+/*   try {  // ? so slow
+    require('electron-reloader')(module, {
+        debug: true,
+        watchRenderer: true
+    });
+  } catch (_) { console.log('Error'); }
+ */
 }
+
 
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
@@ -76,8 +91,13 @@ const createWindow = async () => {
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: true
     },
   });
+
+  // Blur window when close o loses focus
+mainWindow.webContents.on('did-finish-load', () => {if(mainWindow) mainWindow.webContents.send('ping', '🤘') });
+
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
@@ -133,3 +153,4 @@ app
     });
   })
   .catch(console.log);
+
