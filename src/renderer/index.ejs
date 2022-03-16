@@ -12,16 +12,11 @@
     <div id="root"></div>
   </body>
   <script>
-    let ports = []
-
     const ir = window.electron.ipcRenderer
     ir.once('ipc-example', (arg) => {
       console.log(arg);
     });
 
-    setInterval(_=>ir.portsReq(), 1000)
-
     ir.myPing();
-
   </script>
 </html>

@@ -1,18 +1,16 @@
-import React, { useState, useEffect  } from 'react';
-
-interface portsProps{
-  name : string
+interface portsListProps{
+  name? : string;
 }
 
-let string = 'temp'
+let string = 'temp';
 
 export function setPorts(ports:string){
-  string = ports
+  string += ports;
 }
 
-function PortsList(props:portsProps){
-  console.log('?')
-  return <div>{string}</div>
+function PortsList(props:portsListProps){
+  console.log(props.name);
+  return <div>{string}</div>;
 }
 
 export default PortsList;

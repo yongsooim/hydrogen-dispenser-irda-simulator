@@ -12,10 +12,9 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
+import { SerialPort } from 'serialport';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
-import {SerialPort} from 'serialport'
-
 
 export default class AppUpdater {
   constructor() {
@@ -27,15 +26,10 @@ export default class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 
-
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
   console.log(msgTemplate(arg));
   event.reply('ipc-example', msgTemplate('pong'));
-});
-
-ipcMain.on('portsReq', async (event) => {
-  SerialPort.list().then(ports=>{event.reply('portsReq', ports)})
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -48,15 +42,7 @@ const isDevelopment =
 
 if (isDevelopment) {
   require('electron-debug')();
-/*   try {  // ? so slow
-    require('electron-reloader')(module, {
-        debug: true,
-        watchRenderer: true
-    });
-  } catch (_) { console.log('Error'); }
- */
 }
-
 
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
@@ -95,10 +81,6 @@ const createWindow = async () => {
     },
   });
 
-  // Blur window when close o loses focus
-mainWindow.webContents.on('did-finish-load', () => {if(mainWindow) mainWindow.webContents.send('ping', '🤘') });
-
-
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
   mainWindow.on('ready-to-show', () => {
@@ -110,6 +92,13 @@ mainWindow.webContents.on('did-finish-load', () => {if(mainWindow) mainWindow.we
     } else {
       mainWindow.show();
     }
+
+    // emit port info list periodically
+    setInterval(() => {
+        SerialPort.list()
+          .then( ports => { mainWindow? mainWindow.webContents.send('updatePortsInfo', [ports]) : null})
+          .catch(console.log)
+    }, 3000 );
   });
 
   mainWindow.on('closed', () => {
@@ -153,4 +142,3 @@ app
     });
   })
   .catch(console.log);
-
