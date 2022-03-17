@@ -11,12 +11,4 @@
   <body>
     <div id="root"></div>
   </body>
-  <script>
-    const ir = window.electron.ipcRenderer
-    ir.once('ipc-example', (arg) => {
-      console.log(arg);
-    });
-
-    ir.myPing();
-  </script>
 </html>

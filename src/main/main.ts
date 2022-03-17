@@ -12,9 +12,9 @@ import path from 'path';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { SerialPort } from 'serialport';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+import { sendSerialInfoList } from './handleSerial'
 
 export default class AppUpdater {
   constructor() {
@@ -24,13 +24,7 @@ export default class AppUpdater {
   }
 }
 
-let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
-});
+export let mainWindow: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -79,6 +73,7 @@ const createWindow = async () => {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: true
     },
+    autoHideMenuBar: true
   });
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
@@ -93,12 +88,7 @@ const createWindow = async () => {
       mainWindow.show();
     }
 
-    // emit port info list periodically
-    setInterval(() => {
-        SerialPort.list()
-          .then( ports => { mainWindow? mainWindow.webContents.send('updatePortsInfo', [ports]) : null})
-          .catch(console.log)
-    }, 3000 );
+    sendSerialInfoList(mainWindow)
   });
 
   mainWindow.on('closed', () => {
@@ -116,7 +106,7 @@ const createWindow = async () => {
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
-  new AppUpdater();
+  //new AppUpdater();
 };
 
 /**
