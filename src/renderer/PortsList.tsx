@@ -6,12 +6,11 @@ const ipcRenderer = window.electron.ipcRenderer
 
 let PortsList = () => {
   const [portInfoArr, setPortInfoArr] = useState([] as PortInfo[])
-  const [selectedPort, setSelectedPort] = useState('')
   const [connectedPort, setConnectedPort] = useState('')
 
   useEffect(()=>{ // add event listenr port list update by main.ts(emits list periodically)
-    ipcRenderer.on('updatePortsInfo', (args:any) => {
-      let receivedPorts= args[0] as PortInfo[]
+    ipcRenderer.on('updatePortsInfo', (ports: PortInfo[]) => {
+      let receivedPorts= ports
       let receivedPortsPath = receivedPorts.map(port=>port.path)
 
       if((receivedPortsPath.length == oldPortsPath.length) // early return when ports not changed
@@ -24,18 +23,26 @@ let PortsList = () => {
       }
     })
 
-    ipcRenderer.on('connectSerialReq', (arg:any) => {
-      console.log(arg + ' received');
+    ipcRenderer.on('connectSerialReq', (path:string) => {
+      console.log(path + ' conneted')
+      setConnectedPort(path)
     });
 
+    ipcRenderer.on('closeSerialReq', (path:string) => {
+      console.log(path + ' closed')
+      setConnectedPort('')
+    });
   }, []);
 
   let portsPathList = portInfoArr.length == 0 ? <li className = "list-group-item"> No ports discovered </li> : portInfoArr.map((port) =>
-      <li className = {port.path == selectedPort ? " list-group-item selectedPort" : "list-group-item"}
+      <li className = {port.path == connectedPort ? " list-group-item connectedPort" : "list-group-item"}
             key = {port.path}
             onClick={()=>{
-              setSelectedPort(port.path)
-              ipcRenderer.send('connectSerialReq', port.path)
+              if(connectedPort == port.path) {
+                ipcRenderer.send('closeSerialReq', port.path)
+              } else {
+                ipcRenderer.send('connectSerialReq', port.path)
+              }
             }} > {port.path}
         <ul>
           <li> {' S/N          : ' + port.serialNumber}</li>

@@ -1,0 +1,73 @@
+/*
+ * @NOTE: Prepend a `~` to css file paths that are in your node_modules
+ *        See https://github.com/webpack-contrib/sass-loader#imports
+ */
+
+body {
+  background: grey;
+  font-family: sans-serif;
+  overflow-y: scroll;
+  display: flex;
+  justify-content: center;
+  -webkit-user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+}
+
+li {
+  list-style: none;
+}
+
+li:hover {
+  cursor:pointer;
+}
+
+li.connectedPort{
+  background-color: grey;
+}
+
+#root {
+  width: calc(100% - 30px);
+}
+
+#titlebar {
+  padding : 0px 10px 0px 10px;
+  text-align: center;
+}
+
+#maincontent {
+  padding : 0px 10px 0px 10px;
+  max-width: 1000px;
+  height: 600px;
+  overflow-y: scroll;
+}
+
+#footer {
+  padding : 0px 10px 0px 10px;
+  width: 100%;
+}
+
+#sidebarCol{
+  left : 0px;
+  padding : 0px 0px 0px 10px;
+  width: 280px;
+  max-width:280px;
+  height: 600px;
+  overflow-y: scroll;
+}
+
+#Rx {
+  padding : 0px 10px 0px 10px;
+  width: 100%;
+}
+
+#Tx {
+  padding : 0px 10px 0px 10px;
+  width: 100%;
+}
+
+td input {
+  width: 60px;
+}

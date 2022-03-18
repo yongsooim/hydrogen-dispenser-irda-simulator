@@ -1,47 +1,45 @@
-import './Content.css';
+import './Contents.css';
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/js/bootstrap.bundle'
 import 'react-bootstrap/dist/react-bootstrap.min.js';
+import MainContent from './MainContent'
 import PortsList from './PortsList'
+import Footer from './Footer'
+import Tx from './Tx'
+import Rx from './Rx'
 
-export const Content = () => {
+export const Contents = () => {
   return (
     <div id = "container">
 
-      <div className="row">
+      <div className="row " >
         <div className = "col">
-          <div id = "titlebar">
+          <div id = "titlebar" >
             <h2>Hydrogen Dispenser IrDA Simulator</h2>
           </div>
         </div>
       </div>
 
-      <div className="row">
-        <div className = "col">
-          <div id = "navbar">
-            this is navbar
+      <div className="row addScroll">
+        <div className="col" id = "sidebarCol">
+          <div id = "sidebar">
+            <PortsList />
+          </div>
+        </div>
+        <div className="col">
+          <div id = "maincontent" >
+            <MainContent />
           </div>
         </div>
       </div>
 
-      <div className="row">
-        <div className="col">
-          <div id = "sidebar">
-            <PortsList />
-            <div>after ports list</div>
-          </div>
-        </div>
-        <div className="col">
-          <div id = "maincontent">
-            main content text
-          </div>
-        </div>
-      </div>
+      <Rx />
+      <Tx />
 
       <div className="row">
         <div className = "col">
           <div id = "footer">
-            footer text
+            <Footer />
           </div>
         </div>
       </div>

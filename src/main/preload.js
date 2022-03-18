@@ -11,7 +11,6 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.once(channel, (event, ...args) => func(...args));
     },
     off(channel, listener) {
-      // Deliberately strip event as it includes `sender`
       ipcRenderer.off(channel, listener);
     },
     send(channel, args) {
