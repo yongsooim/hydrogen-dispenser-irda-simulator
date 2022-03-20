@@ -10,9 +10,11 @@ let MainContent = () => {
     window.electron.ipcRenderer.on('received', (buffer:Uint8Array) => {
 
       updateReceivedData((receivedData) =>[<Accordion.Item eventKey={receivedData.length.toString()} key = {receivedData.length} >
-          <Accordion.Header>{Date.now()}</Accordion.Header>
+          <Accordion.Header>{(new Date(Date.now()).getSeconds() + ":" +  new Date(Date.now()).getMilliseconds())}</Accordion.Header>
           <Accordion.Body>
-                {buffer.join(', ')}
+                {
+                  Array.from(buffer).map(v => { return '0x' +  v.toString(16).toUpperCase()}).join(', ')
+                }
           </Accordion.Body>
         </Accordion.Item>
       , ...receivedData])
@@ -22,7 +24,7 @@ let MainContent = () => {
   }, [])
 
   return <div className = "overflow-auto " >
-    <Accordion defaultActiveKey="0">
+    <Accordion>
 
     {receivedData}
     </Accordion>
