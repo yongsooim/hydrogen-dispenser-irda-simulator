@@ -4,8 +4,8 @@ let Tx = () => {
   const [idData, setIdData] = useState('SAE J2799');
   const [vnData, setVnData] = useState('01.00');
   const [tvData, setTvData] = useState('');
-  const [rtData, setRtData] = useState('');
-  const [fcData, setFcData] = useState('');
+  const [rtData, setRtData] = useState('H25');
+  const [fcData, setFcData] = useState('Dyna');
   const [mpData, setMpData] = useState('');
   const [mtData, setMtData] = useState('');
   const [odData, setOdData] = useState('');
@@ -22,6 +22,9 @@ let Tx = () => {
       od : odData,}
 
     window.electron.ipcRenderer.send('txReqByObj', frameObj)
+
+    //window.electron.ipcRenderer.send('txReqByObj', frameObj)
+
   }
 
   useEffect(()=>{
@@ -57,13 +60,13 @@ let Tx = () => {
                 <option value="Dyna">Dyna</option>
                 <option value="Stat">Stat</option>
                 <option value="Halt">Halt</option>
-                <option value="Abord">Abord</option>
+                <option value="Abort">Abort</option>
               </select>
             </td>
             <td><input name = "MP" type="text" value = {mpData} onChange={e => setMpData(e.target.value)} placeholder="###.#" /> </td>
             <td><input name = "MT" type="text" value = {mtData} onChange={e => setMtData(e.target.value)} placeholder="###.#" /> </td>
             <td><input name = "OD" type="text" value = {odData} onChange={e => setOdData(e.target.value)} placeholder="~74 char" /> </td>
-            <td><input type="button" value="Send" onClick={()=>{send()}}/> </td>
+            <td><input type = "button" value="Send" onClick={()=>{send()}}/> </td>
           </tr>
         </tbody>
       </table>

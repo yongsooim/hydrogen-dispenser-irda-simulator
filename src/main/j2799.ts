@@ -121,28 +121,27 @@ export class J2699Frame {
 
   buildBuffer(){
 
-    let retBuf = Buffer.from([XBOF_sym, XBOF_sym, XBOF_sym, XBOF_sym, XBOF_sym, BOF_sym])
 
-    let buffArr = [retBuf]
+    let applicationData ='|'
 
-    buffArr.push(Buffer.from('|'))
-    if(this.data?.id) buffArr.push(Buffer.from('ID=' + this.data.id + '|'))
-    if(this.data?.vn) buffArr.push(Buffer.from('VN=' + this.data.vn + '|'))
-    if(this.data?.tv) buffArr.push(Buffer.from('TV=' + this.data.tv + '|'))
-    if(this.data?.rt) buffArr.push(Buffer.from('RT=' + this.data.rt + '|'))
-    if(this.data?.fc) buffArr.push(Buffer.from('FC=' + this.data.fc + '|'))
-    if(this.data?.mp) buffArr.push(Buffer.from('MP=' + this.data.mp + '|'))
-    if(this.data?.mt) buffArr.push(Buffer.from('MT=' + this.data.mt + '|'))
-    if(this.data?.od) buffArr.push(Buffer.from('OD=' + this.data.od + '|'))
+    if(this.data?.id) applicationData += 'ID=' + this.data.id + '|'
+    if(this.data?.vn) applicationData += 'VN=' + this.data.vn + '|'
+    if(this.data?.tv) applicationData += 'TV=' + this.data.tv + '|'
+    if(this.data?.rt) applicationData += 'RT=' + this.data.rt + '|'
+    if(this.data?.fc) applicationData += 'FC=' + this.data.fc + '|'
+    if(this.data?.mp) applicationData += 'MP=' + this.data.mp + '|'
+    if(this.data?.mt) applicationData += 'MT=' + this.data.mt + '|'
+    if(this.data?.od) applicationData += 'OD=' + this.data.od + '|'
 
+    console.log(applicationData)
 
-    let fcs1 = Buffer.from([0])
-    let fcs2 = Buffer.from([0])
+    let fcsArr = chkTxCrcTransparency(crctablefast(applicationData))
 
-    buffArr.push(fcs1, fcs2, Buffer.from([EOF_sym]))
+    let applicationDataArr = new TextEncoder().encode(applicationData)
 
-    Buffer.concat(buffArr)
-    return Buffer.concat(buffArr)
+    let retBuf = Buffer.from([XBOF_sym, XBOF_sym, XBOF_sym, XBOF_sym, XBOF_sym, BOF_sym, ...applicationDataArr, ...fcsArr, EOF_sym])
+
+    return retBuf
   }
 }
 
@@ -192,7 +191,7 @@ const crchighbit = 1 << (order - 1);
 
 // Data character string
 // no transparency
-let msgdata= "|ID=SAE J2799|VN=01.00|TV=0119.0|RT=H70|FC=Halt|MP=050.0|MT=273.0|"
+let msgdata   = "|ID=SAE J2799|VN=01.00|TV=0119.0|RT=H70|FC=Halt|MP=050.0|MT=273.0|"
 let msgdata_2 = "|ID=SAE J2799|VN=01.00|TV=0119.0|RT=H70|FC=Dyna|MP=025.1|MT=234.0|"
 
 // internal global values:
@@ -283,22 +282,6 @@ function chkTxCrcTransparency(crc_in:number) {
   return crcArr
 }
 
-function chkRxTransparency(data:number[]) {
-  let retData = [] as number[]
-  for(let i = 0 ; i < data.length ; i++){
-
-    if(data[i] == CE_sym){
-      i++
-      if(i < data.length){
-        retData.push(data[i] ^ 0x20)
-      }
-
-    } else {
-      retData.push(data[i])
-    }
-  }
-}
-
 
 
 let crctab = [] as number[]
@@ -326,8 +309,8 @@ function generate_crc_table() {
 generate_crc_table()
 
 
-console.log('0x' + crctablefast(  msgdata).toString(16))
-console.log('0x' + crctablefast(  msgdata_2).toString(16))
+console.log('0x' + crctablefast(msgdata).toString(16))
+console.log('0x' + crctablefast(msgdata_2).toString(16))
 
-console.log(chkTxCrcTransparency(crctablefast(  msgdata) ).map(v=>v.toString(16)) )
-console.log(chkTxCrcTransparency(crctablefast(  msgdata_2)).map(v=>v.toString(16)) )
+console.log(chkTxCrcTransparency(crctablefast(msgdata)).map(v=>v.toString(16)) )
+console.log(chkTxCrcTransparency(crctablefast(msgdata_2)).map(v=>v.toString(16)) )

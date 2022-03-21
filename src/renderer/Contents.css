@@ -5,7 +5,6 @@
 
 body {
   background: grey;
-  font-family: sans-serif;
   overflow-y: scroll;
   display: flex;
   justify-content: center;
@@ -44,7 +43,8 @@ li {
 
 #maincontent {
   padding : 0px 10px 0px 10px;
-  max-width: 1000px;
+  max-width: calc(100vw - 340px);
+  min-width: calc(100vw - 340px);
   height: 600px;
   overflow-y: scroll;
   height: calc(100vh - 280px);
@@ -90,4 +90,8 @@ select {
 
 .accordion-button:hover{
   background-color: lightgrey;
+}
+
+.accordion-body {
+  white-space: pre-line;
 }
