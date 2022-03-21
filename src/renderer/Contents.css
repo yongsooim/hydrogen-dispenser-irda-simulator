@@ -9,10 +9,11 @@ body {
   overflow-y: scroll;
   display: flex;
   justify-content: center;
+  overflow-wrap: anywhere;
 }
 
 li {
-  list-style: none;ㅎ
+  list-style: none;
 }
 
 li:hover {
@@ -20,11 +21,15 @@ li:hover {
 }
 
 li.connectedPort{
-  background-color: grey;
+  background-color: lightgrey;
 }
 
 #root {
   width: calc(100% - 30px);
+}
+
+li {
+  white-space: pre-line;
 }
 
 #titlebar {
@@ -35,7 +40,6 @@ li.connectedPort{
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
-
 }
 
 #maincontent {
@@ -59,7 +63,6 @@ li.connectedPort{
   min-width:280px;
   height: calc(100vh - 280px);
   overflow-y: scroll;
-
 }
 
 #Rx {
@@ -73,5 +76,18 @@ li.connectedPort{
 }
 
 td input {
-  width: 60px;
+  width: 100px;
+}
+
+select {
+  width: 100px;
+  height: 31px;
+}
+
+.accordion-button {
+  height: 20px;
+}
+
+.accordion-button:hover{
+  background-color: lightgrey;
 }

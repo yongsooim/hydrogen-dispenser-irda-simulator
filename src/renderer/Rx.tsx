@@ -53,7 +53,7 @@ let Rx = () => {
             <td><input type="text" /> </td>
             <td><input type="text" /> </td>
             <td><input type="text" /> </td>
-            <td> Received </td>
+            <td ><div style={{width : "100px"}}> Received </div> </td>
           </tr>
         </tbody>
       </table>

@@ -50,9 +50,9 @@ ipcMain.on('connectSerialReq', async (event, path) => {
         }
 
         const parser = port.pipe(new InterByteTimeoutParser({ interval: 50 }))
-        parser.on('data', (data)=>{
-          console.log("received data on " + port?.path + " : " + data.toString() )
-          mainWindow?.webContents.send('received', data)
+        parser.on('data', (data:Uint8Array)=>{
+          console.log("received data on " + port?.path + " : " + data)
+          mainWindow?.webContents.send('received', data) // data : Uint8Array
         } ) // will emit data if there is a pause between packets of at least 30ms
 
         port.on('error', function(err) {

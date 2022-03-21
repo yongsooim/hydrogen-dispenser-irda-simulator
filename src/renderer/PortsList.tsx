@@ -43,13 +43,12 @@ let PortsList = () => {
               } else {
                 ipcRenderer.send('connectSerialReq', port.path)
               }
-            }} > {port.path}
-        <ul>
-          <li> {' S/N          : ' + port.serialNumber}</li>
-          <li> {' Manufacturer : ' + port.manufacturer}</li>
-          <li> {' Proudct ID   : ' + port.productId   }</li>
-          <li> {' Vender ID    : ' + port.vendorId    }</li>
-        </ul>
+            }} >
+            {port.path + '\n' +
+              ' S/N          : ' + port.serialNumber + '\n' +
+              ' Manufacturer : ' + port.manufacturer + '\n' +
+              ' Proudct ID   : ' + port.productId    + '\n' +
+              ' Vender ID    : ' + port.vendorId     }
       </li> )
 
   return <div className = "portListDiv" style={{width:'250px'}} >

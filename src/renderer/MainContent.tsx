@@ -1,5 +1,10 @@
-import { useState, useEffect, createRef, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Accordion } from 'react-bootstrap'
+
+const XBOF_sym =  0xFF // Extra Begin of Frame
+const BOF_sym  =  0xC0 // Begin of Frame
+const EOF_sym  =  0xC1 // End of Frame
+const CE_sym   =  0x7D // Control Escape
 
 let MainContent = () => {
 
@@ -8,7 +13,6 @@ let MainContent = () => {
   useEffect(()=>{
 
     window.electron.ipcRenderer.on('received', (buffer:Uint8Array) => {
-
       updateReceivedData((receivedData) =>[<Accordion.Item eventKey={receivedData.length.toString()} key = {receivedData.length} >
           <Accordion.Header>{(new Date(Date.now()).getSeconds() + ":" +  new Date(Date.now()).getMilliseconds())}</Accordion.Header>
           <Accordion.Body>

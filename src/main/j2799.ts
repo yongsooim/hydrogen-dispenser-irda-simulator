@@ -6,11 +6,11 @@
   transmitted last. Bits are transmitted at a rate of 38400 bits per second.
 */
 
-//ASCII
+//control characters
 export const XBOF_sym =  0xFF // Extra Begin of Frame
-export const BOF_sym =  0xC0 // Begin of Frame
-export const EOF_sym =  0xC1 // End of Frame
-export const CE_sym =  0x7D // Control Escape
+export const BOF_sym  =  0xC0 // Begin of Frame
+export const EOF_sym  =  0xC1 // End of Frame
+export const CE_sym   =  0x7D // Control Escape
 
 const J2799DATALENGTH	= (66)
 const	XBOFDATALENGTH	= (5)
@@ -27,7 +27,7 @@ const defs = {
   fc : { range : "Dyna, Stat, Halt, Abort",                                     interval:"100ms", direction:"Vehicle to Dispenser"},  //  Fueling Command
   mp : { range : "000.0 - 100.0",           format : "###.#",  units: "MPa",    interval:"100ms", direction:"Vehicle to Dispenser"},  //  Measured Pressure
   mt : { range : "16.0 - 425.0",            format : "###.#",  units: "Kelvin", interval:"100ms", direction:"Vehicle to Dispenser"},  //  Measured Temperature
-  od : { range : " ~74 length without | ",                                      interval:"100ms", direction:"Vehicle to Dispenser"},  //  Optional Data
+  od : { range : " ~74 characters without character '|' ",                      interval:"100ms", direction:"Vehicle to Dispenser"},  //  Optional Data
 }
 
 export interface J2699Data {
@@ -146,15 +146,11 @@ export class J2699Frame {
   }
 }
 
-
-
 function buildFrameWithTransparency(arg : string) {
   return arg
 }
 
-function checkTransparency(arg : string){
-  return arg
-}
+
 
 function calcCrc(arg : string){
   return arg
@@ -170,8 +166,6 @@ const exampleData  = new J2699Frame({
   mt : "273.0",
   od : undefined
 })
-
-
 
 
 
@@ -198,8 +192,8 @@ const crchighbit = 1 << (order - 1);
 
 // Data character string
 // no transparency
-let msgdata:Uint8Array =   Buffer.from("|ID=SAE J2799|VN=01.00|TV=0119.0|RT=H70|FC=Halt|MP=050.0|MT=273.0|")
-let msgdata_2:Uint8Array = Buffer.from("|ID=SAE J2799|VN=01.00|TV=0119.0|RT=H70|FC=Dyna|MP=025.1|MT=234.0|")
+let msgdata= "|ID=SAE J2799|VN=01.00|TV=0119.0|RT=H70|FC=Halt|MP=050.0|MT=273.0|"
+let msgdata_2 = "|ID=SAE J2799|VN=01.00|TV=0119.0|RT=H70|FC=Dyna|MP=025.1|MT=234.0|"
 
 // internal global values:
 let crcinit_direct: number;
@@ -237,10 +231,103 @@ function crcbitbybitfast(data:Uint8Array) {
 	return(crc);
 }
 
-console.log('0x' + crcbitbybitfast(
-  msgdata
-).toString(16))
+function crctablefast(data:string) {
+	// fast lookup table algorithm without augmented zero bytes, e.g., used in pkzip.
+	// only usable with polynom orders of 8, 16, 24 or 32.
+  let len = data.length
+	let crc = crcinit_direct;
+  let i = 0
+	if (refin) crc = reflect(crc, order);
+	if (!refin) while (len--) crc = (crc << 8) ^ crctab[((crc >> (order - 8)) & 0xff) ^ data.charCodeAt(i++)];
+	else while (len--) crc = (crc >> 8) ^ crctab[(crc & 0xff) ^ data.charCodeAt(i++)];
+	if (refout^refin) crc = reflect(crc, order);
+	crc ^= crcxor;
+	crc &= crcmask;
+	return(crc);
+}
 
-console.log('0x' + crcbitbybitfast(
-  msgdata_2
-).toString(16))
+
+function chkTxCrcTransparency(crc_in:number) {
+	// transparency check
+	let crc_part1, crc_part2;
+  let crcArr = [] as number[]
+
+	crc_part1 = ((crc_in >> 8) & 0xff);
+	switch (crc_part1)
+	{
+	case XBOF_sym:
+	case BOF_sym:
+	case EOF_sym:
+	case CE_sym:
+		crcArr.push(CE_sym);
+		crcArr.push(crc_part1 ^ 0x20);
+		break;
+	default:
+		crcArr.push(crc_part1);
+	}
+
+	crc_part2 = (crc_in & 0xff);
+	switch (crc_part2)
+	{
+	case XBOF_sym:
+	case BOF_sym:
+	case EOF_sym:
+	case CE_sym:
+		crcArr.push(CE_sym);
+		crcArr.push(crc_part2 ^ 0x20);
+		break;
+	default:
+		crcArr.push(crc_part2)
+	}
+
+  return crcArr
+}
+
+function chkRxTransparency(data:number[]) {
+  let retData = [] as number[]
+  for(let i = 0 ; i < data.length ; i++){
+
+    if(data[i] == CE_sym){
+      i++
+      if(i < data.length){
+        retData.push(data[i] ^ 0x20)
+      }
+
+    } else {
+      retData.push(data[i])
+    }
+  }
+}
+
+
+
+let crctab = [] as number[]
+
+function generate_crc_table() {
+	// make CRC lookup table used by table algorithms
+	let i, j;
+	let bit, crc;
+	for (i = 0; i < 256; i++) {
+		crc = i;
+		if (refin) crc = reflect(crc, 8);
+		crc <<= order - 8;
+		for (j = 0; j < 8; j++) {
+			bit = crc & crchighbit;
+			crc <<= 1;
+			if (bit) crc ^= polynom;
+		}
+
+		if (refin) crc = reflect(crc, order);
+		crc &= crcmask;
+		crctab[i] = crc;
+	}
+}
+
+generate_crc_table()
+
+
+console.log('0x' + crctablefast(  msgdata).toString(16))
+console.log('0x' + crctablefast(  msgdata_2).toString(16))
+
+console.log(chkTxCrcTransparency(crctablefast(  msgdata) ).map(v=>v.toString(16)) )
+console.log(chkTxCrcTransparency(crctablefast(  msgdata_2)).map(v=>v.toString(16)) )
