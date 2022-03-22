@@ -2,7 +2,7 @@ import { mainWindow } from './main'
 import { ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
 import { InterByteTimeoutParser } from '@serialport/parser-inter-byte-timeout'
-import { J2699Data, J2699Frame } from './j2799'
+import { J2699Data, J2699Frame } from '../common/j2799'
 import setFooterText from './setFooterText'
 
 let portsListUpdateInterval : NodeJS.Timer

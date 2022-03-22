@@ -4,26 +4,29 @@ const BOF_sym  =  0xC0 // Begin of Frame
 const EOF_sym  =  0xC1 // End of Frame
 const CE_sym   =  0x7D // Control Escape
 
-export function removeRxTransparency(data:Uint8Array) {
+export function removeRxTransparencyAndCrc(data:Uint8Array) {
 
-  let arr = Array.from(data)
-  let ret = []
-  console.log("received arr : " + arr)
+  let transparencyRemoved = []
+  //console.log("received arr : " + arr)
 
   for(let i = 0 ; i < data.length ; i++){
 
     if(data[i] == CE_sym){
       i++
       if(i < data.length){
-        ret.push(data[i] ^ 0x20)
+        transparencyRemoved.push(data[i] ^ 0x20)
       }
 
     } else {
-      ret.push(data[i])
+      transparencyRemoved.push(data[i])
     }
   }
-  console.log('processed arr : ' + ret)
-  return new Uint8Array(ret)
+  //console.log('processed arr : ' + ret)
+
+  let crcRemoved = String.fromCharCode.apply(null, transparencyRemoved).split('|').slice(0, -1).join('|')
+
+
+  return new Uint8Array(new TextEncoder().encode(crcRemoved))
 }
 
 
