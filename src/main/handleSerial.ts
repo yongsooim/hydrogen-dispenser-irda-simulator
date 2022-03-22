@@ -2,7 +2,7 @@ import { mainWindow } from './main'
 import { ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
 import { InterByteTimeoutParser } from '@serialport/parser-inter-byte-timeout'
-import { J2699Data, J2699Frame } from '../common/j2799'
+import { J2699Data, buildBuffer } from '../common/j2799'
 import setFooterText from './setFooterText'
 
 let portsListUpdateInterval : NodeJS.Timer
@@ -49,7 +49,7 @@ ipcMain.on('connectSerialReq', async (event, path) => {
           })
         }
 
-        const parser = port.pipe(new InterByteTimeoutParser({ interval: 50 }))
+        const parser = port.pipe(new InterByteTimeoutParser({ interval: 30 }))
         parser.on('data', (data:Uint8Array)=>{
           console.log("received data on " + port?.path + " : " + data)
           mainWindow?.webContents.send('received', data) // data : Uint8Array
@@ -98,9 +98,8 @@ ipcMain.on('txReq',  async (event, data :J2699Data) => {
 
 ipcMain.on('txReqByObj',  async (event, data :J2699Data) => {
   if(port?.isOpen){
-    let frame = new J2699Frame(data)
 
-    port.write(frame.buildBuffer(), function(err) {
+    port.write(buildBuffer(data), function(err) {
       if (err) {
         setFooterText('alert-danger', 'Error on write: ' + err.message)
         return console.log('Error on write: ', err.message)

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import {XBOF_sym, BOF_sym, EOF_sym, CE_sym, J2699Frame, isValidJ2799Frame} from '../common/j2799'
+import {XBOF_sym, BOF_sym, EOF_sym, CE_sym, isValidJ2799Frame} from '../common/j2799'
 
 
 let Rx = () => {
@@ -18,16 +18,15 @@ let Rx = () => {
     window.electron.ipcRenderer.on('received', (buffer:Uint8Array) => {
 
       let {isValid, validFrame} = isValidJ2799Frame(buffer)
-
       if(isValid){
-        if(validFrame.data.id) setIdData(validFrame.data.id)
-        if(validFrame.data.vn) setVnData(validFrame.data.vn)
-        if(validFrame.data.tv) setTvData(validFrame.data.tv)
-        if(validFrame.data.rt) setRtData(validFrame.data.rt)
-        if(validFrame.data.fc) setFcData(validFrame.data.fc)
-        if(validFrame.data.mp) setMpData(validFrame.data.mp)
-        if(validFrame.data.mt) setMtData(validFrame.data.mt)
-        if(validFrame.data.od) setOdData(validFrame.data.od)
+        if(validFrame.id) setIdData(validFrame.id)
+        if(validFrame.vn) setVnData(validFrame.vn)
+        if(validFrame.tv) setTvData(validFrame.tv)
+        if(validFrame.rt) setRtData(validFrame.rt)
+        if(validFrame.fc) setFcData(validFrame.fc)
+        if(validFrame.mp) setMpData(validFrame.mp)
+        if(validFrame.mt) setMtData(validFrame.mt)
+        if(validFrame.od) setOdData(validFrame.od)
 
       }
 

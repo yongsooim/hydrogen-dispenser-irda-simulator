@@ -41,37 +41,29 @@ export interface J2699Data {
   od? : string
 }
 
-export class J2699Frame {
 
-  constructor(data:J2699Data | undefined){
-    this.data = data
-  }
+export function buildBuffer(data : J2699Data){
 
-  data: J2699Data | undefined;
+  let applicationData ='|'
 
-  buildBuffer(){
+  if(data.id) applicationData += 'ID=' + data.id + '|'
+  if(data.vn) applicationData += 'VN=' + data.vn + '|'
+  if(data.tv) applicationData += 'TV=' + data.tv + '|'
+  if(data.rt) applicationData += 'RT=' + data.rt + '|'
+  if(data.fc) applicationData += 'FC=' + data.fc + '|'
+  if(data.mp) applicationData += 'MP=' + data.mp + '|'
+  if(data.mt) applicationData += 'MT=' + data.mt + '|'
+  if(data.od) applicationData += 'OD=' + data.od + '|'
 
-    let applicationData ='|'
+  //console.log(applicationData)
 
-    if(this.data?.id) applicationData += 'ID=' + this.data.id + '|'
-    if(this.data?.vn) applicationData += 'VN=' + this.data.vn + '|'
-    if(this.data?.tv) applicationData += 'TV=' + this.data.tv + '|'
-    if(this.data?.rt) applicationData += 'RT=' + this.data.rt + '|'
-    if(this.data?.fc) applicationData += 'FC=' + this.data.fc + '|'
-    if(this.data?.mp) applicationData += 'MP=' + this.data.mp + '|'
-    if(this.data?.mt) applicationData += 'MT=' + this.data.mt + '|'
-    if(this.data?.od) applicationData += 'OD=' + this.data.od + '|'
+  let fcsArr = removeCrcTransparency(crctablefast(applicationData))
 
-    //console.log(applicationData)
+  let applicationDataArr = new TextEncoder().encode(applicationData)
 
-    let fcsArr = chkTxCrcTransparency(crctablefast(applicationData))
+  let retBuf = Buffer.from([XBOF_sym, XBOF_sym, XBOF_sym, XBOF_sym, XBOF_sym, BOF_sym, ...applicationDataArr, ...fcsArr, EOF_sym])
 
-    let applicationDataArr = new TextEncoder().encode(applicationData)
-
-    let retBuf = Buffer.from([XBOF_sym, XBOF_sym, XBOF_sym, XBOF_sym, XBOF_sym, BOF_sym, ...applicationDataArr, ...fcsArr, EOF_sym])
-
-    return retBuf
-  }
+  return retBuf
 }
 
 export function removeRxTransparencyAndCrc(data:Uint8Array) {
@@ -79,7 +71,7 @@ export function removeRxTransparencyAndCrc(data:Uint8Array) {
   let transparencyRemoved = []
   //console.log("received arr : " + arr)
 
-  for(let i = 0 ; i < data.length ; i++){
+  for(let i = 6 ; i < data.length ; i++){ // starts with 6 for deleteing BOF and XBOF
 
     if(data[i] == CE_sym){
       i++
@@ -104,7 +96,7 @@ export function isValidJ2799Frame(data:Uint8Array) {
 
   let dataArr = Array.from(data)
 
-  let frameObj : J2699Data  = {}
+  let frameObj = {} as J2699Data
 
   let ret = {isValid : true, validFrame : {} as any}
 
@@ -120,18 +112,22 @@ export function isValidJ2799Frame(data:Uint8Array) {
 
   let split = appWithCrcString.split('|')
 
-  let appString = split.slice(0,-1).join('|')
+  let appString = split.slice(0,-1).join('|') + '|'
 
+  let receivedCrc = split.slice(-1)[0]
+  if(!removeCrcTransparency(crctablefast(appString)).every( (v, index ) =>{
+    return (receivedCrc.charCodeAt(index) == v)
+  })) {
+    ret.isValid = false
+  }
 
   split.slice(1, -1).forEach(v=>{
     let value = v.slice(3)
-
     if(v.startsWith('ID=')) {
       if(value != "SAE J2799") ret.isValid = false
       else frameObj.id = value
     }
     else if(v.startsWith('VN=')) {
-      console.log(v)
       if(!value.match(/^[0-9]{2}[.][0-9]{2}$/)) ret.isValid = false
       else frameObj.vn = value
 
@@ -178,7 +174,8 @@ export function isValidJ2799Frame(data:Uint8Array) {
     }
   })
 
-  ret.validFrame = new J2699Frame(frameObj)
+  if(ret.isValid)
+    ret.validFrame = frameObj
 
   return ret
 }
@@ -259,7 +256,7 @@ export function crctablefast(data:string) {
 }
 
 
-export function chkTxCrcTransparency(crc_in:number) {
+export function removeCrcTransparency(crc_in:number) {
 	// transparency check
 	let crc_part1, crc_part2;
   let crcArr = [] as number[]
@@ -326,5 +323,5 @@ let msgdata_2 = "|ID=SAE J2799|VN=01.00|TV=0119.0|RT=H70|FC=Dyna|MP=025.1|MT=234
 console.log('0x' + crctablefast(msgdata).toString(16))
 console.log('0x' + crctablefast(msgdata_2).toString(16))
 
-console.log(chkTxCrcTransparency(crctablefast(msgdata)).map(v=>v.toString(16)) )
-console.log(chkTxCrcTransparency(crctablefast(msgdata_2)).map(v=>v.toString(16)) )
+console.log(removeCrcTransparency(crctablefast(msgdata)).map(v=>v.toString(16)) )
+console.log(removeCrcTransparency(crctablefast(msgdata_2)).map(v=>v.toString(16)) )
