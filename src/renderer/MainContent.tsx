@@ -16,9 +16,10 @@ let MainContent = () => {
     window.electron.ipcRenderer.on('received', (buffer:Uint8Array) => {
 
       let removedArr = removeRxTransparencyAndCrc(buffer)
+      let currentTime = new Date(Date.now())
       //console.log(removedArr)
       updateReceivedData((receivedData) =>[<Accordion.Item eventKey={receivedData.length.toString()} key = {receivedData.length} >
-          <Accordion.Header>{(new Date(Date.now()).getSeconds() + ":" +  new Date(Date.now()).getMilliseconds())}</Accordion.Header>
+          <Accordion.Header>{currentTime.getHours() + ":" + currentTime.getMinutes() + ":" +  currentTime.getSeconds() + "." +  currentTime.getMilliseconds()}</Accordion.Header>
           <Accordion.Body>
                 {
                   'Parsed : \n' + new TextDecoder().decode(removedArr.filter((v)=>{
