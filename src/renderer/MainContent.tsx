@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Accordion } from 'react-bootstrap'
-import {removeRxTransparencyAndCrc} from '../common/j2799_common'
+import {removeRxTransparencyAndCrc} from '../common/j2799'
 
 
 const XBOF_sym =  0xFF // Extra Begin of Frame

@@ -95,8 +95,7 @@ export function removeRxTransparencyAndCrc(data:Uint8Array) {
 
   let crcRemoved = String.fromCharCode.apply(null, transparencyRemoved).split('|').slice(0, -1).join('|')
 
-
-  return new Uint8Array(Buffer.from(crcRemoved))
+  return new Uint8Array(new TextEncoder().encode(crcRemoved))
 }
 
 
