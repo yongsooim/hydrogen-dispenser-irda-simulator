@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-import {XBOF_sym, BOF_sym, EOF_sym, CE_sym, isValidJ2799Frame} from '../common/j2799'
+import {XBOF_sym, BOF_sym, EOF_sym, CE_sym, isValidJ2799Frame, validateFrame} from '../common/j2799'
 
 
 let Rx = () => {
@@ -17,17 +17,16 @@ let Rx = () => {
   useEffect(()=>{ // add event listenr port list update by main.ts(emits list periodically)
     window.electron.ipcRenderer.on('received', (buffer:Uint8Array) => {
 
-      let {isValid, validFrame} = isValidJ2799Frame(buffer)
-      if(isValid){
-        if(validFrame.id) setIdData(validFrame.id)
-        if(validFrame.vn) setVnData(validFrame.vn)
-        if(validFrame.tv) setTvData(validFrame.tv)
-        if(validFrame.rt) setRtData(validFrame.rt)
-        if(validFrame.fc) setFcData(validFrame.fc)
-        if(validFrame.mp) setMpData(validFrame.mp)
-        if(validFrame.mt) setMtData(validFrame.mt)
-        if(validFrame.od) setOdData(validFrame.od)
-
+      let {isAllValid, j2699data} = validateFrame(buffer)
+      if(isAllValid){
+        if(j2699data.id) setIdData(j2699data.id)
+        if(j2699data.vn) setVnData(j2699data.vn)
+        if(j2699data.tv) setTvData(j2699data.tv)
+        if(j2699data.rt) setRtData(j2699data.rt)
+        if(j2699data.fc) setFcData(j2699data.fc)
+        if(j2699data.mp) setMpData(j2699data.mp)
+        if(j2699data.mt) setMtData(j2699data.mt)
+        if(j2699data.od) setOdData(j2699data.od)
       }
 
       //validation for J2699 frame
@@ -61,14 +60,14 @@ let Rx = () => {
         </thead>
         <tbody>
           <tr>
-            <td><input type="text" value = {idData} readOnly={true}/> </td>
-            <td><input type="text" value = {vnData} readOnly={true}/> </td>
-            <td><input type="text" value = {tvData} readOnly={true}/> </td>
-            <td><input type="text" value = {rtData} readOnly={true}/> </td>
-            <td><input type="text" value = {fcData} readOnly={true}/> </td>
-            <td><input type="text" value = {mpData} readOnly={true}/> </td>
-            <td><input type="text" value = {mtData} readOnly={true}/> </td>
-            <td><input type="text" value = {odData} readOnly={true}/> </td>
+            <td><input type="text" value = {idData} readOnly/> </td>
+            <td><input type="text" value = {vnData} readOnly/> </td>
+            <td><input type="text" value = {tvData} readOnly/> </td>
+            <td><input type="text" value = {rtData} readOnly/> </td>
+            <td><input type="text" value = {fcData} readOnly/> </td>
+            <td><input type="text" value = {mpData} readOnly/> </td>
+            <td><input type="text" value = {mtData} readOnly/> </td>
+            <td><input type="text" value = {odData} readOnly/> </td>
             <td ><div style={{width : "100px"}}> Received </div> </td>
           </tr>
         </tbody>

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 
 let Tx = () => {
+
   const [idData, setIdData] = useState('SAE J2799');
   const [vnData, setVnData] = useState('01.00');
   const [tvData, setTvData] = useState('');
@@ -11,8 +12,8 @@ let Tx = () => {
   const [odData, setOdData] = useState('');
 
   let send = () => {
-
-    let frameObj = {id : idData,
+    let frameObj = {
+      id : idData,
       vn : vnData,
       tv : tvData,
       rt : rtData,
@@ -22,21 +23,21 @@ let Tx = () => {
       od : odData,}
 
     window.electron.ipcRenderer.send('txReqByObj', frameObj)
-
-    //window.electron.ipcRenderer.send('txReqByObj', frameObj)
-
   }
 
-  useEffect(()=>{
+  let sendByKey:React.KeyboardEventHandler = (e) => {
+    if(e.key == 'Enter'){
+      send()
+    }
+  }
 
-  },[])
 
   return <div>
-  <div className="row">
-  <div className = "col" >
+  <div className="row"  >
+  <div className = "col"  >
   <div id="Tx">
 
-        <table className="table table-sm">
+        <table className="table table-sm" onKeyPress = {sendByKey} >
         <tbody>
           <tr>
             <td><input name = "ID" type="text" value = {idData} onChange={e => setIdData(e.target.value)} /> </td>
@@ -68,6 +69,18 @@ let Tx = () => {
             <td><input name = "OD" type="text" value = {odData} onChange={e => setOdData(e.target.value)} placeholder="~74 char" /> </td>
             <td><input type = "button" value="Send" onClick={()=>{send()}}/> </td>
           </tr>
+          <tr>
+            <td> </td>
+            <td> </td>
+            <td> <small>0000.0 - 5000.0 </small> </td>
+            <td> </td>
+            <td> </td>
+            <td> <small>000.0 - 100.0 </small></td>
+            <td> <small>016.0 - 425.0 </small></td>
+            <td> </td>
+            <td> </td>
+          </tr>
+
         </tbody>
       </table>
 

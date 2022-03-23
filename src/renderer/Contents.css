@@ -5,7 +5,7 @@
 
 body {
   background: grey;
-  overflow-y: scroll;
+  overflow-y: hidden;
   display: flex;
   justify-content: center;
   overflow-wrap: anywhere;
@@ -47,7 +47,7 @@ li {
   min-width: calc(100vw - 340px);
   height: 600px;
   overflow-y: scroll;
-  height: calc(100vh - 280px);
+  height: calc(100vh - 300px);
 }
 
 #footer {
@@ -61,7 +61,7 @@ li {
   width: 280px;
   max-width:280px;
   min-width:280px;
-  height: calc(100vh - 280px);
+  height: calc(100vh - 300px);
   overflow-y: scroll;
 }
 

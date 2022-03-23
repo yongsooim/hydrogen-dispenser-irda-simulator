@@ -29,7 +29,6 @@ const defs = {
   od : { range : " ~74 characters without character '|' ",                      interval:"100ms", direction:"Vehicle to Dispenser"},  //  Optional Data
 }
 
-
 export interface J2699Data {
   id? : string
   vn? : string
@@ -85,7 +84,7 @@ export function removeRxTransparencyAndCrc(data:Uint8Array) {
   }
   //console.log('processed arr : ' + ret)
 
-  let crcRemoved = String.fromCharCode.apply(null, transparencyRemoved).split('|').slice(0, -1).join('|')
+  let crcRemoved = String.fromCharCode.apply(null, transparencyRemoved).split('|').slice(0, -1).join('|') + '|'
 
   return new Uint8Array(new TextEncoder().encode(crcRemoved))
 }
@@ -325,3 +324,121 @@ console.log('0x' + crctablefast(msgdata_2).toString(16))
 
 console.log(removeCrcTransparency(crctablefast(msgdata)).map(v=>v.toString(16)) )
 console.log(removeCrcTransparency(crctablefast(msgdata_2)).map(v=>v.toString(16)) )
+
+
+export function validateFrame(data:Uint8Array){
+
+  let isBofValid
+  let isCrcValid
+  let isEofValid
+  let isAllValid
+
+  let split = new TextDecoder().decode(data).split('|')
+  let appString = '|' + split.slice(1, -1).join('|') + '|'
+
+  console.log("\nappString : " + appString)
+  isBofValid = validateBof(data)
+  let {isAppStringValid, j2699data} = validateAppString(appString)
+
+  let receivedCrc = Array.from(data.slice(6 + appString.length, -1))
+  let calculatedCrc = removeCrcTransparency(crctablefast(appString))
+
+  console.log(calculatedCrc)
+  console.log(receivedCrc)
+
+  if(receivedCrc.length != calculatedCrc.length ||
+    !calculatedCrc.every( (v, index) =>{
+        return (receivedCrc[index] == v)
+  })) {
+    isCrcValid = false
+  } else {
+    isCrcValid = true
+  }
+
+  if(data.slice(-1)[0] == EOF_sym) {
+    isEofValid = true
+  } else {
+    isEofValid = false
+  }
+
+  if(isBofValid && isAppStringValid && isCrcValid && isEofValid) {
+    isAllValid = true
+  } else {
+    isAllValid = false
+  }
+
+  return { isBofValid, isAppStringValid, isCrcValid, isEofValid, isAllValid, j2699data }
+}
+
+function validateBof(data:Uint8Array){
+
+  if(data[0] != XBOF_sym) return false
+  if(data[1] != XBOF_sym) return false
+  if(data[2] != XBOF_sym) return false
+  if(data[3] != XBOF_sym) return false
+  if(data[4] != XBOF_sym) return false
+  if(data[5] != BOF_sym)  return false
+
+  return true
+}
+
+
+function validateAppString(appString : string){
+
+  let split = appString.split('|')
+  let isValid = true
+  let j2699data = {} as J2699Data
+
+  split.slice(1, -1).forEach(v=>{
+    let value = v.slice(3)
+    if(v.startsWith('ID=')) {
+      if(value != "SAE J2799") isValid = false
+      else j2699data.id = value
+    }
+    else if(v.startsWith('VN=')) {
+      if(!value.match(/^[0-9]{2}[.][0-9]{2}$/)) isValid = false
+      else j2699data.vn = value
+
+    }
+    else if(v.startsWith('TV=')) {
+      if(!value.match(/^[0-9]{4}[.][0-9]{1}$/)) isValid = false
+      if(parseFloat(value) > 5000 ) isValid = false
+      j2699data.tv = value
+
+    }
+    else if(v.startsWith('RT=')) {
+      if(!value.match(/^H25$|^H35$|^H50$|^H70$/)) isValid = false
+      j2699data.rt = value
+    }
+    else if(v.startsWith('FC=')) {
+      if(!value.match(/^Dyna$|^Stat$|^Halt$|^Abort$/)) isValid = false
+      j2699data.fc = value
+
+    }
+    else if(v.startsWith('MP=')) {
+      if(!value.match(/^[0-9]{3}[.][0-9]{1}$/)) isValid = false
+      if(parseFloat(value) > 100) isValid = false
+      j2699data.mp = value
+
+    }
+    else if(v.startsWith('MT=')) {
+      if(!value.match(/^[0-9]{3}[.][0-9]{1}$/)) isValid = false
+      if(parseFloat(value) > 425 &&  parseFloat(value) <= 16) isValid = false
+      j2699data.mt = value
+    }
+    else if(v.startsWith('OD=')) {
+      if(value.includes('|'))
+        isValid = false
+
+      if(value.length > 74)
+        isValid = false
+
+      j2699data.od = value
+    }
+    else {
+      isValid = false
+    }
+  })
+
+  return {isAppStringValid : isValid, j2699data: j2699data}
+}

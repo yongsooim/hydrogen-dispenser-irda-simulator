@@ -2,7 +2,7 @@ import { mainWindow } from './main'
 import { ipcMain } from 'electron';
 import { SerialPort } from 'serialport';
 import { InterByteTimeoutParser } from '@serialport/parser-inter-byte-timeout'
-import { J2699Data, buildBuffer } from '../common/j2799'
+import { J2699Data, buildBuffer, validateFrame } from '../common/j2799'
 import setFooterText from './setFooterText'
 
 let portsListUpdateInterval : NodeJS.Timer
@@ -52,7 +52,12 @@ ipcMain.on('connectSerialReq', async (event, path) => {
         const parser = port.pipe(new InterByteTimeoutParser({ interval: 30 }))
         parser.on('data', (data:Uint8Array)=>{
           console.log("received data on " + port?.path + " : " + data)
+
+          validateFrame(data)
+          console.log(validateFrame(data))
+
           mainWindow?.webContents.send('received', data) // data : Uint8Array
+
         } ) // will emit data if there is a pause between packets of at least 30ms
 
         port.on('error', function(err) {
