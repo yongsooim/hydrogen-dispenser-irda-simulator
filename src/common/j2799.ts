@@ -367,7 +367,7 @@ export function validateFrame(data:Uint8Array){
     isAllValid = false
   }
 
-  return { isBofValid, isAppStringValid, isCrcValid, isEofValid, isAllValid, j2699data }
+  return { isAllValid, j2699data, appString }
 }
 
 function validateBof(data:Uint8Array){

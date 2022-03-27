@@ -95,3 +95,7 @@ select {
 .accordion-body {
   white-space: pre-line;
 }
+
+.invalidFrame{
+  background-color: lightgrey;
+}

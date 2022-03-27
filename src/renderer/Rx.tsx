@@ -15,9 +15,11 @@ let Rx = () => {
 
 
   useEffect(()=>{ // add event listenr port list update by main.ts(emits list periodically)
-    window.electron.ipcRenderer.on('received', (buffer:Uint8Array) => {
+    window.electron.ipcRenderer.on('received', (args:any) => {
 
-      let {isAllValid, j2699data} = validateFrame(buffer)
+      let {isAllValid, j2699data} = args[0]
+      console.log(isAllValid)
+
       if(isAllValid){
         if(j2699data.id) setIdData(j2699data.id)
         if(j2699data.vn) setVnData(j2699data.vn)

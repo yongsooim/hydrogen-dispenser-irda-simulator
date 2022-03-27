@@ -13,23 +13,28 @@ let MainContent = () => {
   const [receivedData, updateReceivedData] = useState([] as any[])
 
   useEffect(()=>{
-    window.electron.ipcRenderer.on('received', (buffer:Uint8Array) => {
+    window.electron.ipcRenderer.on('received', (args:any[]) => {
 
-      let removedArr = removeRxTransparencyAndCrc(buffer)
+      let {isAllValid} = args[0]
+      let appString = ''
+
+      if(isAllValid)  {
+        ({appString} = args[0])
+      } else {
+        appString = 'No valid frame'
+      }
+
+      let rawData:Uint8Array = args[1]
+
+      console.log(rawData)
       let currentTime = new Date(Date.now())
       //console.log(removedArr)
       updateReceivedData((receivedData) =>[<Accordion.Item eventKey={receivedData.length.toString()} key = {receivedData.length} >
           <Accordion.Header>{currentTime.getHours() + ":" + currentTime.getMinutes() + ":" +  currentTime.getSeconds() + "." +  currentTime.getMilliseconds()}</Accordion.Header>
           <Accordion.Body>
                 {
-                  'Parsed : \n' + new TextDecoder().decode(removedArr.filter((v)=>{
-                    if(v == XBOF_sym) return false
-                    if(v == BOF_sym ) return false
-                    if(v == EOF_sym ) return false
-                    if(v == CE_sym  ) return false
-                    return true
-                  })) + '\n' +
-                  'Hex : \n' +  Array.from(buffer).map(v => { return v.toString(16).toUpperCase()}).join(', ')
+                  'Parsed : \n' + appString + '\n' +
+                  'Hex : \n' + Array.from(rawData).map(x => x.toString(16).toUpperCase().padStart(2, '0')).join(',')
                 }
           </Accordion.Body>
         </Accordion.Item>

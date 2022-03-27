@@ -37,7 +37,7 @@ ipcMain.on('connectSerialReq', async (event, path) => {
         event.reply('connectSerialReq', path);
         setFooterText( 'alert-success', path + ' opened')
 
-        if(true){
+        if(true){ // test for writing first contact
           const data = 'first contact'
           port?.write(data, function(err) {  // first contact
             if (err) {
@@ -53,12 +53,9 @@ ipcMain.on('connectSerialReq', async (event, path) => {
         parser.on('data', (data:Uint8Array)=>{
           console.log("received data on " + port?.path + " : " + data)
 
-          validateFrame(data)
-          console.log(validateFrame(data))
+          mainWindow?.webContents.send('received', [validateFrame(data), data]) // data : Uint8Array
 
-          mainWindow?.webContents.send('received', data) // data : Uint8Array
-
-        } ) // will emit data if there is a pause between packets of at least 30ms
+        }) // will emit data if there is a pause between packets of at least 30ms
 
         port.on('error', function(err) {
           console.log('Error: ', err.message)
@@ -67,9 +64,7 @@ ipcMain.on('connectSerialReq', async (event, path) => {
   }
 
   if(port?.isOpen){
-    port?.close(()=>{
-      openPort()
-    })
+    port?.close(openPort)
   } else {
     openPort()
   }
