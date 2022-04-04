@@ -343,8 +343,8 @@ export function validateFrame(data:Uint8Array){
   let receivedCrc = Array.from(data.slice(6 + appString.length, -1))
   let calculatedCrc = removeCrcTransparency(crctablefast(appString))
 
-  console.log(calculatedCrc)
-  console.log(receivedCrc)
+  console.log("calculated CRC : " + calculatedCrc)
+  console.log("received CRC : " + receivedCrc)
 
   if(receivedCrc.length != calculatedCrc.length ||
     !calculatedCrc.every( (v, index) =>{
@@ -367,7 +367,7 @@ export function validateFrame(data:Uint8Array){
     isAllValid = false
   }
 
-  return { isAllValid, j2699data, appString }
+  return {isBofValid , isAppStringValid , isCrcValid , isEofValid, isAllValid, j2699data, appString }
 }
 
 function validateBof(data:Uint8Array){
@@ -396,18 +396,18 @@ function validateAppString(appString : string){
       else j2699data.id = value
     }
     else if(v.startsWith('VN=')) {
-      if(!value.match(/^[0-9]{2}[.][0-9]{2}$/)) isValid = false
+      if(!value.match(/^[0-9]{2}[.][0-9]{2}$/) || value.length != 5) isValid = false
       else j2699data.vn = value
 
     }
     else if(v.startsWith('TV=')) {
-      if(!value.match(/^[0-9]{4}[.][0-9]{1}$/)) isValid = false
+      if(!value.match(/^[0-9]{4}[.][0-9]{1}$/) || value.length != 6) isValid = false
       if(parseFloat(value) > 5000 ) isValid = false
       j2699data.tv = value
 
     }
     else if(v.startsWith('RT=')) {
-      if(!value.match(/^H25$|^H35$|^H50$|^H70$/)) isValid = false
+      if(!value.match(/^H25$|^H35$|^H50$|^H70$/) || value.length != 3) isValid = false
       j2699data.rt = value
     }
     else if(v.startsWith('FC=')) {
@@ -416,13 +416,13 @@ function validateAppString(appString : string){
 
     }
     else if(v.startsWith('MP=')) {
-      if(!value.match(/^[0-9]{3}[.][0-9]{1}$/)) isValid = false
+      if(!value.match(/^[0-9]{3}[.][0-9]{1}$/) || value.length != 5) isValid = false
       if(parseFloat(value) > 100) isValid = false
       j2699data.mp = value
 
     }
     else if(v.startsWith('MT=')) {
-      if(!value.match(/^[0-9]{3}[.][0-9]{1}$/)) isValid = false
+      if(!value.match(/^[0-9]{3}[.][0-9]{1}$/) || value.length != 5) isValid = false
       if(parseFloat(value) > 425 &&  parseFloat(value) <= 16) isValid = false
       j2699data.mt = value
     }

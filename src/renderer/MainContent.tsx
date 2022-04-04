@@ -15,6 +15,7 @@ let MainContent = () => {
   useEffect(()=>{
     window.electron.ipcRenderer.on('received', (args:any[]) => {
 
+      console.log(args[0])
       let {isAllValid} = args[0]
       let appString = ''
 

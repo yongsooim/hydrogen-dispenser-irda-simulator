@@ -27,12 +27,15 @@ ipcMain.on('connectSerialReq', async (event, path) => {
     port = new SerialPort({
       path: path,
       baudRate: 38400, // J2799 standard baudrate
+    //  baudRate: 19200, // J2799 standard baudrate
     }, (err)=>{if(err){
       console.log(err.message)
       setFooterText('alert-danger', err.message)
     }})
 
     port.on('open', function() {
+
+
       if(port?.isOpen){
         event.reply('connectSerialReq', path);
         setFooterText( 'alert-success', path + ' opened')
@@ -49,7 +52,7 @@ ipcMain.on('connectSerialReq', async (event, path) => {
           })
         }
 
-        const parser = port.pipe(new InterByteTimeoutParser({ interval: 30 }))
+        const parser = port.pipe(new InterByteTimeoutParser({ interval: 50 }))
         parser.on('data', (data:Uint8Array)=>{
           console.log("received data on " + port?.path + " : " + data)
 
