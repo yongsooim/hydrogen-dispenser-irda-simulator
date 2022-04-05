@@ -423,7 +423,7 @@ function validateAppString(appString : string){
     }
     else if(v.startsWith('MT=')) {
       if(!value.match(/^[0-9]{3}[.][0-9]{1}$/) || value.length != 5) isValid = false
-      if(parseFloat(value) > 425 &&  parseFloat(value) <= 16) isValid = false
+      if(parseFloat(value) > 425 && parseFloat(value) < 16) isValid = false
       j2699data.mt = value
     }
     else if(v.startsWith('OD=')) {
