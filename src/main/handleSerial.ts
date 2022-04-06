@@ -27,14 +27,12 @@ ipcMain.on('connectSerialReq', async (event, path) => {
     port = new SerialPort({
       path: path,
       baudRate: 38400, // J2799 standard baudrate
-    //  baudRate: 19200, // J2799 standard baudrate
     }, (err)=>{if(err){
       console.log(err.message)
       setFooterText('alert-danger', err.message)
     }})
 
     port.on('open', function() {
-
 
       if(port?.isOpen){
         event.reply('connectSerialReq', path);
